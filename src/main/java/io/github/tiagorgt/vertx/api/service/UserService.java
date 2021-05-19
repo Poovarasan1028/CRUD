@@ -1,5 +1,6 @@
 package io.github.tiagorgt.vertx.api.service;
 
+import io.github.tiagorgt.vertx.api.entity.Info;
 import io.github.tiagorgt.vertx.api.entity.User;
 import io.github.tiagorgt.vertx.api.repository.UserDao;
 import io.vertx.core.AsyncResult;
@@ -10,7 +11,11 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by tiago on 07/10/2017.
@@ -18,12 +23,25 @@ import java.util.List;
 public class UserService {
     private UserDao userDao = UserDao.getInstance();
 
+
     public void list(Handler<AsyncResult<List<User>>> handler) {
         Future<List<User>> future = Future.future();
         future.setHandler(handler);
 
         try {
             List<User> result = userDao.findAll();
+            future.complete(result);
+        } catch (Throwable ex) {
+            future.fail(ex);
+        }
+    }
+    
+    public void listInfo(Handler<AsyncResult<List<Info>>> handler) {
+        Future<List<Info>> future = Future.future();
+        future.setHandler(handler);
+
+        try {
+            List<Info> result = userDao.findAllInfo();
             future.complete(result);
         } catch (Throwable ex) {
             future.fail(ex);
@@ -54,13 +72,14 @@ public class UserService {
         }
     }
     
-    public void login(RoutingContext context,User newUser, Handler<AsyncResult<JsonObject>> handler) {
-        Future<JsonObject> future = Future.future();
+    public void login(RoutingContext context,User newUser, Handler<AsyncResult<Info>> handler) {
+        Future<Info> future = Future.future();
         future.setHandler(handler);
-        JsonObject jo = new JsonObject();
        
 
         try {
+        	Info info=new Info();
+
         	if(newUser.getUsername().isEmpty() && newUser.getPassword().isEmpty()) {
                 sendError("Invalid username and password", context.response());
         	}else {
@@ -68,13 +87,36 @@ public class UserService {
             
             if(newUser.getUsername().contentEquals((user.getUsername())) && newUser.getPassword().contentEquals(user.getPassword()))
             {
-            	jo.put("status",true);
-            }else {
-            	jo.put("status",false);
-            }
+            	Random r = new java.util.Random ();
+            	String s = Long.toString (r.nextLong () & Long.MAX_VALUE, 36);
+            	String date = Instant.now().atOffset(ZoneOffset.UTC).toLocalDateTime().toString();
+            	
+            	info.setToken(s);
+            	info.setlogin_date(date);
+            	info.setis_active(true);
+            	info.setUsername(user.getUsername());
+            	
+            	userDao.persistInfo(info);
+            	
+              }
         	}
             
-            future.complete(jo);
+            future.complete(info);
+        } catch (Throwable ex) {
+            future.fail(ex);
+        }
+    }
+    
+    public void logout(Info newUser, Handler<AsyncResult<Info>> handler) {
+        Future<Info> future = Future.future();
+        future.setHandler(handler);
+
+        Info info=new Info();
+        
+        try {
+        	info=userDao.getByToken(newUser.getToken());
+        	userDao.persistInfo(info);            
+            future.complete(info);
         } catch (Throwable ex) {
             future.fail(ex);
         }

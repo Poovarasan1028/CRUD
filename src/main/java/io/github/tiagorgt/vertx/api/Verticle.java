@@ -1,9 +1,6 @@
-/**
- * Created by tiago on 07/10/2017.
- */
 package io.github.tiagorgt.vertx.api;
 
-import io.github.tiagorgt.vertx.api.entity.Position;
+import io.github.tiagorgt.vertx.api.entity.Info;
 import io.github.tiagorgt.vertx.api.entity.User;
 import io.github.tiagorgt.vertx.api.service.PositionService;
 import io.github.tiagorgt.vertx.api.service.UserService;
@@ -12,20 +9,14 @@ import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 public class Verticle extends AbstractVerticle {
 
@@ -54,9 +45,13 @@ public class Verticle extends AbstractVerticle {
         router.get("/position").handler(this::getPositions);
         router.get("/user").handler(this::getUsers);
         router.get("/user/:id").handler(this::getById);
+        router.get("/info").handler(this::getInfo);
         router.post("/login").handler(this::login);
+        router.post("/logout").handler(this::logout);
         router.post("/user").handler(this::save);
+        
         router.put("/user").handler(this::update);
+        
         router.delete("/user/:id").handler(this::remove);
         router.post("/user/filter").handler(this::getUsersByFilter);
 
@@ -76,6 +71,16 @@ public class Verticle extends AbstractVerticle {
 
     private void getPositions(RoutingContext context) {
         positionService.list(ar -> {
+            if (ar.succeeded()) {
+                sendSuccess(Json.encodePrettily(ar.result()), context.response());
+            } else {
+                sendError(ar.cause().getMessage(), context.response());
+            }
+        });
+    }
+    
+    private void getInfo(RoutingContext context) {
+        userService.listInfo(ar -> {
             if (ar.succeeded()) {
                 sendSuccess(Json.encodePrettily(ar.result()), context.response());
             } else {
@@ -127,6 +132,16 @@ public class Verticle extends AbstractVerticle {
             }
         });
     }
+    
+    private void logout(RoutingContext context) {
+        userService.logout(Json.decodeValue(context.getBodyAsString(), Info.class), ar -> {
+            if (ar.succeeded()) {
+                sendSuccess(Json.encodePrettily(ar.result()), context.response());
+            } else {
+                sendError("Token not available.", context.response());
+            }
+        });
+    }
 
     private void save(RoutingContext context) {
         userService.save(Json.decodeValue(context.getBodyAsString(), User.class), ar -> {
@@ -137,7 +152,8 @@ public class Verticle extends AbstractVerticle {
             }
         });
     }
-
+    
+    
     private void update(RoutingContext context) {
         userService.update(Json.decodeValue(context.getBodyAsString(), User.class), ar -> {
             if (ar.succeeded()) {

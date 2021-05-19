@@ -1,5 +1,6 @@
 package io.github.tiagorgt.vertx.api.repository;
 
+import io.github.tiagorgt.vertx.api.entity.Info;
 import io.github.tiagorgt.vertx.api.entity.User;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.json.JsonObject;
@@ -47,6 +48,15 @@ public class UserDao {
         }
     }
     
+    public Info getByIdInfo(String cpf) {
+        Object result = entityManager.find(Info.class, cpf);
+        if (result != null) {
+            return (Info) result;
+        } else {
+            return null;
+        }
+    }
+    
     
     public User getByUsername(String name) {
     	User user = null;
@@ -63,9 +73,26 @@ public class UserDao {
     	return user;
     	}
     
+    public Info getByToken(String token) {
+    	Info info = entityManager.find(Info.class, token);
+    	try {
+    		info.setis_active(false);
+    		
+    	}
+    	catch(Exception ex) {
+    	ex.printStackTrace();
+    	}
+    	return info;
+    	}
+    
     @SuppressWarnings("unchecked")
     public List<User> findAll() {
         return entityManager.createQuery("FROM " + User.class.getName()).getResultList();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Info> findAllInfo() {
+        return entityManager.createQuery("FROM " + Info.class.getName()).getResultList();
     }
 
     public List<User> getByFilter(JsonObject filter) {
@@ -118,6 +145,28 @@ public class UserDao {
         try {
             entityManager.getTransaction().begin();
             entityManager.persist(user);
+            entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            entityManager.getTransaction().rollback();
+        }
+    }
+    
+    public void persistInfo(Info info) {
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(info);
+            entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            entityManager.getTransaction().rollback();
+        }
+    }
+    
+    public void mergeInfo(Info info) {
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.merge(info);
             entityManager.getTransaction().commit();
         } catch (Exception ex) {
             ex.printStackTrace();
