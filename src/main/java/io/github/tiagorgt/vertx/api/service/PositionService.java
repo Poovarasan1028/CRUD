@@ -1,5 +1,6 @@
 package io.github.tiagorgt.vertx.api.service;
 
+import io.github.tiagorgt.vertx.api.entity.Department;
 import io.github.tiagorgt.vertx.api.entity.Position;
 import io.github.tiagorgt.vertx.api.repository.PositionDao;
 import io.vertx.core.AsyncResult;
@@ -20,6 +21,18 @@ public class PositionService {
 
         try {
             List<Position> result = positionDao.findAll();
+            future.complete(result);
+        } catch (Throwable ex) {
+            future.fail(ex);
+        }
+    }
+    
+    public void listDepartment(Handler<AsyncResult<List<Department>>> handler){
+        Future<List<Department>> future = Future.future();
+        future.setHandler(handler);
+
+        try {
+            List<Department> result = positionDao.findAllDepartment();
             future.complete(result);
         } catch (Throwable ex) {
             future.fail(ex);

@@ -9,11 +9,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 
-/**
- * Created by tiago on 07/10/2017.
- */
 public class UserDao {
     private static UserDao instance;
     protected EntityManager entityManager;
@@ -73,16 +76,56 @@ public class UserDao {
     	return user;
     	}
     
+    
+    public User getForDept(User user) {
+    	User user1 = null;
+    	String name = user.getName();
+    	System.out.print("come "+name);
+
+    	try {    	
+        	user1= entityManager.find(User.class, name);
+
+    		user1.setDepartment(user.getDepartment());
+        	System.out.print("done");
+
+    	}
+    	catch(Exception ex) {
+    	ex.printStackTrace();
+    	}
+    	return user1;
+    	}
+    
+    
     public Info getByToken(String token) {
     	Info info = entityManager.find(Info.class, token);
     	try {
+    		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    		Date date = new Date();
+    		
     		info.setis_active(false);
+    		info.setlogout_date(dateFormat.format(date));
     		
     	}
     	catch(Exception ex) {
     	ex.printStackTrace();
     	}
     	return info;
+    	}
+    
+    public boolean getByTokenCheck(String token) {
+    	boolean check=false;
+    	Info info = entityManager.find(Info.class, token);
+    	try {
+    		if(info.getis_active()==true) {
+    			check=true;
+    		}else {
+    			check=false;
+    		}
+    	}
+    	catch(Exception ex) {
+    	ex.printStackTrace();
+    	}
+    	return check;
     	}
     
     @SuppressWarnings("unchecked")

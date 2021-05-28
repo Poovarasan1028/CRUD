@@ -27,6 +27,10 @@ public class User implements Serializable {
     
     @Column(name = "phone", nullable=false)
     private String phone;
+    
+    @Column(name = "department")
+    private String department;
+    
 
     @ManyToOne
     @JoinColumn(name = "id", referencedColumnName = "id", nullable = false)
@@ -70,6 +74,14 @@ public class User implements Serializable {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+    
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 
     public Position getPosition() {

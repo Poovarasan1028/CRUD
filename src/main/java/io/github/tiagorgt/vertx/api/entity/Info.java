@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "logininfo")
+@Table(name = "login_info")
 public class Info implements Serializable {
 
     @Id
@@ -16,6 +16,9 @@ public class Info implements Serializable {
 
     @Column(name = "login_date")
     private String login_date;
+    
+    @Column(name = "logout_date")
+    private String logout_date;
 
     @Column(name = "is_active")
     private boolean is_active;
@@ -38,6 +41,14 @@ public class Info implements Serializable {
 
     public void setlogin_date(String login_date) {
         this.login_date = login_date;
+    }
+    
+    public String getlogout_date() {
+        return logout_date;
+    }
+
+    public void setlogout_date(String logout_date) {
+        this.logout_date = logout_date;
     }
     
     public boolean getis_active() {

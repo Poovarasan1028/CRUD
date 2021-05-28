@@ -1,5 +1,6 @@
 package io.github.tiagorgt.vertx.api.repository;
 
+import io.github.tiagorgt.vertx.api.entity.Department;
 import io.github.tiagorgt.vertx.api.entity.Position;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -41,5 +42,10 @@ public class PositionDao {
     @SuppressWarnings("unchecked")
     public List<Position> findAll() {
         return entityManager.createQuery("FROM " + Position.class.getName()).getResultList();
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<Department> findAllDepartment() {
+        return entityManager.createQuery("FROM " + Department.class.getName()).getResultList();
     }
 }

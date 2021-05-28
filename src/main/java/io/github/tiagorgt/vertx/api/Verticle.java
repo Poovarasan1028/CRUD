@@ -43,12 +43,17 @@ public class Verticle extends AbstractVerticle {
 
         // routes
         router.get("/position").handler(this::getPositions);
-        router.get("/user").handler(this::getUsers);
         router.get("/user/:id").handler(this::getById);
         router.get("/info").handler(this::getInfo);
+        router.get("/department").handler(this::getDepartment);
+
+        
+        router.post("/user").handler(this::getUsers);
         router.post("/login").handler(this::login);
         router.post("/logout").handler(this::logout);
-        router.post("/user").handler(this::save);
+        router.post("/usersave").handler(this::save);
+        router.post("/department").handler(this::addDept);
+
         
         router.put("/user").handler(this::update);
         
@@ -79,6 +84,16 @@ public class Verticle extends AbstractVerticle {
         });
     }
     
+    private void getDepartment(RoutingContext context) {
+        positionService.listDepartment(ar -> {
+            if (ar.succeeded()) {
+                sendSuccess(Json.encodePrettily(ar.result()), context.response());
+            } else {
+                sendError(ar.cause().getMessage(), context.response());
+            }
+        });
+    }
+    
     private void getInfo(RoutingContext context) {
         userService.listInfo(ar -> {
             if (ar.succeeded()) {
@@ -90,7 +105,7 @@ public class Verticle extends AbstractVerticle {
     }
 
     private void getUsers(RoutingContext context) {
-        userService.list(ar -> {
+        userService.listUsers(context,Json.decodeValue(context.getBodyAsString(), Info.class), ar -> {
             if (ar.succeeded()) {
                 sendSuccess(Json.encodePrettily(ar.result()), context.response());
             } else {
@@ -98,6 +113,16 @@ public class Verticle extends AbstractVerticle {
             }
         });
     }
+    
+//    private void getUsers(RoutingContext context) {
+//        userService.list(ar -> {
+//            if (ar.succeeded()) {
+//                sendSuccess(Json.encodePrettily(ar.result()), context.response());
+//            } else {
+//                sendError(ar.cause().getMessage(), context.response());
+//            }
+//        });
+//    }
 
     private void getUsersByFilter(RoutingContext context){
         userService.getByFilter(context.getBodyAsJson(), ar -> {
@@ -139,6 +164,16 @@ public class Verticle extends AbstractVerticle {
                 sendSuccess(Json.encodePrettily(ar.result()), context.response());
             } else {
                 sendError("Token not available.", context.response());
+            }
+        });
+    }
+    
+    private void addDept(RoutingContext context) {
+        userService.dept(Json.decodeValue(context.getBodyAsString(), User.class), ar -> {
+            if (ar.succeeded()) {
+                sendSuccess(Json.encodePrettily(ar.result()), context.response());
+            } else {
+                sendError(ar.cause().getMessage(), context.response());
             }
         });
     }

@@ -5,9 +5,6 @@ import io.vertx.core.json.JsonObject;
 import javax.persistence.*;
 import java.io.Serializable;
 
-/**
- * Created by tiago on 07/10/2017.
- */
 @Entity
 @Table(name = "position")
 public class Position implements Serializable {
